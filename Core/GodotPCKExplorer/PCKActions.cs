@@ -740,8 +740,7 @@ namespace GodotPCKExplorer
 
                     try
                     {
-                        if (!Directory.Exists(Path.GetDirectoryName(name)))
-                            Directory.CreateDirectory(Path.GetDirectoryName(name));
+                        PCKUtils.CreateDirectoryAndCheckAccess(Path.GetDirectoryName(name));
 
                         if (File.Exists(name))
                             File.Delete(name);

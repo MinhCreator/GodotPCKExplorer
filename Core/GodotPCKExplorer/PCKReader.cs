@@ -670,7 +670,13 @@ namespace GodotPCKExplorer
                         }
                         else
                         {
-                            if (!file.IsEncrypted || (file.IsEncrypted && noKeyMode == PCKExtractNoEncryptionKeyMode.Cancel))
+                            if (file.lastExtractionIsFailedWithException)
+                            {
+                                failedFiles.AddRange(names.Skip(count));
+                                file.OnProgress -= upd;
+                                return false;
+                            }
+                            else if (!file.IsEncrypted || (file.IsEncrypted && noKeyMode == PCKExtractNoEncryptionKeyMode.Cancel))
                             {
                                 failedFiles.AddRange(names.Skip(count));
                                 ReceivedEncryptionKey = null;
@@ -737,11 +743,11 @@ namespace GodotPCKExplorer
 
                 try
                 {
+                    PCKUtils.CreateDirectoryAndCheckAccess(dir);
+
                     if (File.Exists(outPath))
                         File.Delete(outPath);
 
-                    if (!Directory.Exists(dir))
-                        Directory.CreateDirectory(dir);
                     file = new BinaryWriter(File.OpenWrite(outPath));
                 }
                 catch (Exception ex)
@@ -962,6 +968,9 @@ namespace GodotPCKExplorer
         /// Actual file size inside the package. Including encrypted header.
         /// This size is calculated at the first request.
         /// </summary>
+
+        public bool lastExtractionIsFailedWithException = false;
+
         public long ActualSize
         {
             get
@@ -1035,6 +1044,8 @@ namespace GodotPCKExplorer
 
         public bool ExtractFile(string basePath, out string extractPath, out bool skippedExisted, bool overwriteExisting = true, byte[]? encKey = null, PCKExtractNoEncryptionKeyMode noKeyMode = PCKExtractNoEncryptionKeyMode.Cancel, CancellationToken? cancellationToken = null)
         {
+            lastExtractionIsFailedWithException = false;
+
             string file_name = FilePath.Replace(PCKUtils.PathPrefixRes, "").Replace(PCKUtils.PathPrefixUser, PCKUtils.PathExtractPrefixUser);
             if (IsRemoval)
             {
@@ -1078,11 +1089,11 @@ namespace GodotPCKExplorer
 
             try
             {
-                Directory.CreateDirectory(dir);
-                file = new BinaryWriter(File.Open(path, FileMode.Create, FileAccess.Write, FileShare.Read));
+                file = new BinaryWriter(PCKUtils.CreateDirOpenFileAndCheckAccess(path, FileMode.Create, FileAccess.Write, FileShare.Read));
             }
             catch (Exception ex)
             {
+                lastExtractionIsFailedWithException = true;
                 PCKActions.progress?.ShowMessage(ex, MessageType.Error);
                 return false;
             }
@@ -1149,6 +1160,8 @@ namespace GodotPCKExplorer
             }
             catch (Exception ex)
             {
+                lastExtractionIsFailedWithException = true;
+
                 var res = PCKActions.progress?.ShowMessage(ex, MessageType.Error, PCKMessageBoxButtons.OKCancel);
                 file.Close();
 

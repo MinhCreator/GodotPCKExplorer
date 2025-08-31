@@ -355,5 +355,93 @@ namespace GodotPCKExplorer
 
             return false;
         }
+
+        static Exception FindAccessibleFolderAndAddHint(string dir, Exception ex)
+        {
+            if (!(ex is UnauthorizedAccessException))
+                return ex;
+
+            var accessible_dir = Path.GetDirectoryName(dir);
+            while (!string.IsNullOrEmpty(accessible_dir))
+            {
+                try
+                {
+                    if (!Directory.Exists(accessible_dir))
+                    {
+                        Directory.CreateDirectory(accessible_dir);
+                        break;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            var fp = Path.Combine(accessible_dir, "godot_pck_explorer_access_test.delete_after_testing");
+                            using (var f = File.OpenWrite(fp)) { }
+                            File.Delete(fp);
+                            break;
+                        }
+                        catch (Exception) { }
+                    }
+                }
+                catch (Exception) { }
+
+                accessible_dir = Path.GetDirectoryName(accessible_dir);
+            }
+
+            if (string.IsNullOrEmpty(accessible_dir))
+            {
+                return ex;
+            }
+            else
+            {
+                return new Exception(ex.Message + $"\n\nThe target folder is not writable with your current permissions. But you can choose an accessible parent directory: '{accessible_dir}'.", ex);
+            }
+        }
+
+        /// <summary>
+        /// The usual File.Open, but if there is an UnauthorizedAccessException, a hint will be displayed with the folder available for writing.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="mode"></param>
+        /// <param name="access"></param>
+        /// <param name="share"></param>
+        /// <returns></returns>
+        public static FileStream CreateDirOpenFileAndCheckAccess(string path, FileMode mode, FileAccess access, FileShare share)
+        {
+            string dir = Path.GetDirectoryName(path);
+
+            try
+            {
+                Directory.CreateDirectory(dir);
+                return File.Open(path, mode, access, share);
+            }
+            catch (Exception e)
+            {
+                throw FindAccessibleFolderAndAddHint(dir, e);
+            }
+        }
+
+        /// <summary>
+        /// The usual Directory.CreateDirectory, but if there is an UnauthorizedAccessException, a hint will be displayed with the folder available for writing.
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static bool CreateDirectoryAndCheckAccess(string dir)
+        {
+            try
+            {
+                Directory.CreateDirectory(dir);
+                var fp = Path.Combine(dir, "godot_pck_explorer_access_test.delete_after_testing");
+                using (var f = File.OpenWrite(fp)) { }
+                File.Delete(fp);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                throw FindAccessibleFolderAndAddHint(dir, e);
+            }
+        }
     }
 }

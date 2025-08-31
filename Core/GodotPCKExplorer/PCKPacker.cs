@@ -349,7 +349,7 @@ namespace GodotPCKExplorer
                     }
                     else
                     {
-                        // alignment for fila_base
+                        // alignment for file_base
                         PCKUtils.AddPaddingAlignedByAddress(binWriter, binWriter.BaseStream.Position, alignment, encryptFiles);
                     }
 
