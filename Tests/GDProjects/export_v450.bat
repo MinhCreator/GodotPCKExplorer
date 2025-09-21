@@ -1,6 +1,6 @@
 @echo off
 
-set godot=Godot_v4.5-beta6_win64.exe
+set godot=Godot_v4.5-stable_win64.exe
 set ver=450
 
 echo Place custom templates with encryption key and godot editor here

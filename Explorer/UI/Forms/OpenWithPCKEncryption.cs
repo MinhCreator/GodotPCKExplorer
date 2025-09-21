@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
 namespace GodotPCKExplorer.UI
 {
@@ -14,7 +14,7 @@ namespace GodotPCKExplorer.UI
             DialogResult = DialogResult.Cancel;
         }
 
-        private void btn_ok_Click(object? sender, EventArgs e)
+        void CheckKeyAndClose()
         {
             if (!string.IsNullOrWhiteSpace(tb_key.Text) && !PCKUtils.HexStringValidate(tb_key.Text, 256 / 8))
             {
@@ -26,6 +26,28 @@ namespace GodotPCKExplorer.UI
 
             DialogResult = DialogResult.OK;
             Close();
+        }
+
+        private void btn_ok_Click(object? sender, EventArgs e)
+        {
+            CheckKeyAndClose();
+        }
+
+        private void tb_key_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                CheckKeyAndClose();
+            }
+            else if (e.KeyCode == Keys.Escape)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                DialogResult = DialogResult.Cancel;
+                Close();
+            }
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

@@ -1,4 +1,4 @@
-﻿namespace GodotPCKExplorer.UI
+namespace GodotPCKExplorer.UI
 {
     partial class OpenWithPCKEncryption
     {
@@ -63,6 +63,7 @@
             tb_key.Name = "tb_key";
             tb_key.Size = new Size(455, 23);
             tb_key.TabIndex = 5;
+            tb_key.KeyDown += tb_key_KeyDown;
             // 
             // linkLabel1
             // 

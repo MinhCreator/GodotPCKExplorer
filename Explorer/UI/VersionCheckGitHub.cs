@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 
@@ -107,18 +107,17 @@ internal sealed class VersionCheckerGitHub : IDisposable
 
     private void UpdateClient_DownloadStringCompleted(Task<HttpResponseMessage> taskRes)
     {
-        var res = taskRes.Result;
-        if (!res.IsSuccessStatusCode)
-        {
-            if (!_isSilentCheck)
-                ShowMessageBox(MSGType.FailedToGetInfo, customData: new Dictionary<string, string> { { "respose", res.StatusCode.ToString() } });
-
-            ClearUpdateData();
-            return;
-        }
-
         try
         {
+            var res = taskRes.Result;
+            if (!res.IsSuccessStatusCode)
+            {
+                if (!_isSilentCheck)
+                    ShowMessageBox(MSGType.FailedToGetInfo, customData: new Dictionary<string, string> { { "respose", res.StatusCode.ToString() } });
+
+                return;
+            }
+
             JsonDocument resultObject = JsonDocument.Parse(new StreamReader(res.Content.ReadAsStream()).ReadToEnd()) ?? throw new NullReferenceException();
             var json = resultObject.RootElement;
 
