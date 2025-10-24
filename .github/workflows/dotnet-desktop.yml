@@ -54,32 +54,47 @@ jobs:
           #cache: true
           #cache-dependency-path: '**/packages.lock.json'
 
-      - name: Build Explorer
+      - name: Build Explorer and Bruteforcer
         shell: bash
         run: |
           dotnet build Explorer/UI/GodotPCKExplorer.UI.csproj -c Debug -o bin/ExplorerDbg
           dotnet build Explorer/UI/GodotPCKExplorer.UI.csproj -c Release -o bin/ExplorerRel
+          dotnet buid Bruteforcer/UI/PCKBruteforcer.UI.csproj -c Debug -o bin/BruteforcerDbg
+          dotnet build Bruteforcer/UI/PCKBruteforcer.UI.csproj -c Release -o bin/BruteforcerRel
 
       - name: Prepare artifacts
         shell: powershell
         run: |
           Remove-Item bin/ExplorerRel/* -Recurse -Include *.exp,*.lib,*.pdb -Force
-
-      - name: Upload Debug artifact
+          Remove-Item bin/BruteforcerRel/* -Recurse -Include *.exp,*.lib,*.pdb -Force
+      
+      - name: Upload Debug artifact Explorer
         uses: actions/upload-artifact@v4
         with:
           name: ${{env.ARTIFACT_PREFIX}}_Debug
           path: bin/ExplorerDbg
 
-      - name: Upload Release artifact
+      - name: Upload Release artifact Explorer
         uses: actions/upload-artifact@v4
         with:
           name: ${{needs.get_version.outputs.artifact_name}}_dotnet-ui-console-win-linux-mac
           path: bin/ExplorerRel
+      
+      - name: Upload Debug artifact Bruteforcer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{env.ARTIFACT_PREFIX}}_Debug
+          path: bin/BruteforcerDbg
 
-      - name: Build Bruteforcer
-        run: |
-          dotnet build Bruteforcer/UI/PCKBruteforcer.UI.csproj -o bin/Bruteforcer
+      - name: Upload Release artifact Bruteforcer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{needs.get_version.outputs.artifact_name}}_dotnet-ui-console-win-linux-mac
+          path: bin/BruteforcerRel
+
+      # - name: Build Bruteforcer
+      #   run: |
+      #     dotnet build Bruteforcer/UI/PCKBruteforcer.UI.csproj -o bin/Bruteforcer
 
 
   publish_folder:
@@ -106,6 +121,12 @@ jobs:
           dotnet publish Explorer/Console/GodotPCKExplorer.Console.csproj -p:PublishProfile=Linux64 -o  publish/Linux64
           dotnet publish Explorer/Console/GodotPCKExplorer.Console.csproj -p:PublishProfile=Mac64   -o  publish/Mac64
           dotnet publish Explorer/Console/GodotPCKExplorer.Console.csproj -p:PublishProfile=MacArm  -o  publish/MacArm
+
+          dotnet publish Bruteforcer/Console/PCKBruteforcer.Console.csproj -p:PublishProfile=Win64   -o  publish/Bruteforcer_Win64
+          dotnet publish Bruteforcer/Console/PCKBruteforcer.Console.csproj -p:PublishProfile=Win86   -o  publish/Bruteforcer_Win86
+          dotnet publish Bruteforcer/Console/PCKBruteforcer.Console.csproj -p:PublishProfile=Linux64 -o  publish/Bruteforcer_Linux64
+          dotnet publish Bruteforcer/Console/PCKBruteforcer.Console.csproj -p:PublishProfile=Mac64   -o  publish/Bruteforcer_Mac64
+          dotnet publish Bruteforcer/Console/PCKBruteforcer.Console.csproj -p:PublishProfile=MacArm  -o  publish/Bruteforcer_MacArm
 
       - name: Prepare artifacts
         shell: bash
@@ -143,6 +164,12 @@ jobs:
           cleanup_mbedtls "publish/Mac64"   "mac_universal"
           cleanup_mbedtls "publish/MacArm"  "mac_universal"
 
+          cleanup_mbedtls "publish/Bruteforcer_Win64"   "win_x64"
+          cleanup_mbedtls "publish/Bruteforcer_Win86"   "win_x86"
+          cleanup_mbedtls "publish/Bruteforcer_Linux64" "linux_x64"
+          cleanup_mbedtls "publish/Bruteforcer_Mac64"   "mac_universal"
+          cleanup_mbedtls "publish/Bruteforcer_MacArm"  "mac_universal"
+
       - name: Upload Win64
         uses: actions/upload-artifact@v4
         with:
@@ -172,6 +199,36 @@ jobs:
         with:
           name: thin_mac_arm
           path: publish/MacArm
+      
+      - name: Upload Win64 Bruteforcer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{needs.get_version.outputs.artifact_name}}_native-console-win-64
+          path: publish/Bruteforcer_Win64
+
+      - name: Upload Win86 Bruteforcer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{needs.get_version.outputs.artifact_name}}_native-console-win-86
+          path: publish/Bruteforcer_Win86
+
+      - name: Upload Linux64 Bruteforcer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{needs.get_version.outputs.artifact_name}}_native-console-linux-64
+          path: publish/Bruteforcer_Linux64
+
+      - name: Upload Temp Mac64 Bruteforcer
+        uses: actions/upload-artifact@v4
+        with:
+          name: thin_mac_64 
+          path: publish/Bruteforcer_Mac64
+
+      - name: Upload Temp MacArm Bruteforcer
+        uses: actions/upload-artifact@v4
+        with:
+          name: thin_mac_arm
+          path: publish/Bruteforcer_MacArm
 
 
   fat_mac:
