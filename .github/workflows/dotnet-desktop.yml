@@ -62,7 +62,7 @@ jobs:
         run: |
           dotnet build Explorer/UI/GodotPCKExplorer.UI.csproj -c Debug -o bin/ExplorerDbg
           dotnet build Explorer/UI/GodotPCKExplorer.UI.csproj -c Release -o bin/ExplorerRel
-          dotnet buid Bruteforcer/UI/PCKBruteforcer.UI.csproj -c Debug -o bin/BruteforcerDbg
+          dotnet build Bruteforcer/UI/PCKBruteforcer.UI.csproj -c Debug -o bin/BruteforcerDbg
           dotnet build Bruteforcer/UI/PCKBruteforcer.UI.csproj -c Release -o bin/BruteforcerRel
 
       - name: Prepare artifacts
